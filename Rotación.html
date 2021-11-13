@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Transformaciones</title>
+        <style>
+            html, body { margin: 0; padding: 0; overflow: hidden; }
+            #info {
+                position: absolute;
+                padding: 10px;
+                width: 100%;
+                text-align: center;
+                color: #FFFFFF;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="info">Rotacion<br/>
+        	Use las teclas ↑ y ↓ para rotar el cubo<br/>
+            Selecione los ejes con "x", "y" o "z"<br/>
+
+        </div>
+    <script src="js/three.min.js"></script>
+    <script>
+    	//se inicializan las variables 
+		var scene, aspect, camera, renderer;
+		var geometry;
+		var object;
+		var startTime = Date.now();
+				
+		var Up = false; 
+		var Dawn = false;
+
+
+		var ejeX = true;//se selecciona el eje x
+		var ejeY = false;
+		var ejeZ = false;
+		
+		var p=0;
+		
+		init();
+		animate();
+	
+		function init(){
+			scene = new THREE.Scene();
+			aspect = window.innerWidth / window.innerHeight;
+			camera = new THREE.PerspectiveCamera( 45, aspect, 0.1, 1000);
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+				  			
+
+			
+			var onKeyDown = function ( event ) {// si se oprime una tecla la variable queda verdadera.
+				switch ( event.keyCode ) {
+					case 38: //al se oprimida la tecla "↑" el codigo interno la lee y hace que la varaible se vuelva "Verdadera
+						Up = true;
+						break;
+					case 40: 
+						Dawn = true;
+						break;
+
+					case 88:
+						ejeX = true;
+						ejeY = false;
+						ejeZ = false;
+						break;
+					case 89:
+						ejeX = false;
+						ejeY = true;
+						ejeZ = false;
+						break;
+					case 90: 
+						ejeX = false;
+						ejeY = false;
+						ejeZ = true;
+						break;
+				}
+			};	  
+		  			
+			var onKeyUp = function ( event ) {// si se dejade oprimir una tecla la variable vuelve a se false
+				Up = false;
+				Dawn = false;
+			};	  	
+			
+			document.addEventListener( 'keydown', onKeyDown, false );
+			document.addEventListener( 'keyup', onKeyUp, false );
+			
+			//ELEMENTOS DE ESCENA
+							  
+			var size = 10;
+			var arrowSize = 1;
+			var divisions = size;
+			var origin = new THREE.Vector3( 0, 0, 0 );
+			var x = new THREE.Vector3( 1, 0, 0 );//Los vectores del origen
+			var y = new THREE.Vector3( 0, 1, 0 );
+		  	var z = new THREE.Vector3( 0, 0, 1 );
+		  	
+			var color1 = new THREE.Color( 0xFFFFFF );
+		  	var color2 = new THREE.Color( 0xFFD3FB );
+		  	var colorR = new THREE.Color( 0xAA0000 );//cambiar los colores del plano
+		  	var colorG = new THREE.Color( 0x00AA00 );
+		  	var colorB = new THREE.Color( 0x0000AA );
+			var colorRd = new THREE.Color( 0x79006E );
+		  	var colorGd = new THREE.Color( 0xFF00E8 );//cambia los colores del cubo
+		  	var colorBd = new THREE.Color( 0xFF76F3 );
+		  
+		  	
+		  	var axesHelper = new THREE.AxesHelper( size );
+		  	var gridHelperXY = new THREE.GridHelper( size, divisions);
+		  	var gridHelperXZ = new THREE.GridHelper( size, divisions, color2, color2 );
+		  	var gridHelperYZ = new THREE.GridHelper( size, divisions, color2, color2 );
+            
+            
+            gridHelperXY.rotateOnWorldAxis ( x, THREE.Math.degToRad(90) );
+            gridHelperXZ.rotateOnWorldAxis ( y, THREE.Math.degToRad(90) );//rotar el plano
+            gridHelperYZ.rotateOnWorldAxis ( z, THREE.Math.degToRad(90) );
+            
+            
+            var arrowX = new THREE.ArrowHelper( x, origin, arrowSize, colorR );
+            var arrowY = new THREE.ArrowHelper( y, origin, arrowSize, colorG );
+            var arrowZ = new THREE.ArrowHelper( z, origin, arrowSize, colorB );
+			
+			
+			geometry = new THREE.BoxGeometry( 1.5, 1.5, 1.5 );//geometria / tamaño 
+
+			
+			for ( var i = 0; i < geometry.faces.length; i ++ ) {
+				switch(i){
+					case 0: case 1: geometry.faces[ i ].color = colorRd; break;
+					case 2: case 3: geometry.faces[ i ].color = colorRd; break;
+					case 4: case 5: geometry.faces[ i ].color = colorGd; break;
+					case 6: case 7: geometry.faces[ i ].color = colorGd; break;
+					case 8: case 9: geometry.faces[ i ].color = colorBd; break;
+					case 10: case 11: geometry.faces[ i ].color = colorBd; break;
+				}				
+			}
+
+			 
+			
+			
+			var material = new THREE.MeshBasicMaterial( { color: color1, vertexColors: THREE.FaceColors } );
+			
+			
+			object = new THREE.Mesh( geometry, material );
+									
+		  	
+            scene.add( gridHelperXZ );
+		  	scene.add( arrowX );	
+		  	scene.add( arrowY );	
+		  	scene.add( arrowZ );	
+			scene.add( object );
+			
+			
+			camera.position.x = 5;
+			camera.position.y = 10;	 
+		  	camera.position.z = 10;			
+		
+			}
+    
+    function animate() {
+        render();
+        requestAnimationFrame( animate );
+    }
+    
+    function render(){
+        var dtime = Date.now()-startTime;
+		
+		if(Up) { 
+			p+=0.1;}
+		if(Dawn) {
+			p+=-0.1;}
+
+		
+		if(ejeX){
+			var ñ = new THREE.Euler(p,0,0,'XYZ');//rotacion del eje x
+		}
+		
+		else if(ejeY){
+			var ñ = new THREE.Euler(0,p,0,'XYZ');//rotacion del eje y
+		}
+	
+		else if (ejeZ){
+			var ñ = new THREE.Euler(0,0,p,'XYZ');//rotacion del eje z
+		}
+		object.setRotationFromEuler(ñ);
+        camera.lookAt( 0, 0, 0 );// Apuntar la camara hacia el origen 
+        renderer.render( scene, camera );
+    }
+    </script>
+  </body>
+</html>

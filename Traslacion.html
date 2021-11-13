@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Traslacion</title>
+        <style>
+            html, body { margin: 0; padding: 0; overflow: hidden; }
+            #info {
+                position: absolute;
+                padding: 10px;
+                width: 100%;
+                text-align: center;
+                color: #FFFFFF;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="info">Traslacion<br/>
+
+            Use las teclas ↑ y ↓ para trasladarse en el eje z<br/>
+			Use las teclas ← y → para trasladarse en el eje x<br/>
+			Use las teclas "x" y "z" para trasladarse en el eje y<br/>
+        </div>
+    <script src="js/three.min.js"></script>
+    <script>
+		var scene, aspect, camera, renderer;
+		var geometry;
+		var object;
+		var startTime = Date.now();
+		var upArrow = false; //variables inicializadas
+		var downArrow = false;
+		var leftArrow = false;
+		var rightArrow = false;
+		var leftx = false;
+		var rightz = false;
+		
+		init();
+		animate();
+	
+		function init(){
+			scene = new THREE.Scene();
+			aspect = window.innerWidth / window.innerHeight;
+			camera = new THREE.PerspectiveCamera( 45, aspect, 0.1, 1000);
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+				  			
+			//EVENTOS DE TECLADO
+			
+			var onKeyDown = function ( event ) { // al oprimir una tecla se vuelve verdaderas hace que "function render()"" aumente los valores de las variables
+				switch ( event.keyCode ) {//traduce las teclas a keyCode
+					case 38: 
+						upArrow = true;
+						break;
+					case 40: 
+						downArrow = true;
+						break;
+					case 37: 
+						leftArrow = true;
+						break;
+					case 39:
+						rightArrow = true;
+						break;	
+					case 90: 
+						leftx = true;
+						break;
+					case 88:
+						rightz = true;
+						break;	
+
+				}
+			};	  
+		  			
+			var onKeyUp = function ( event ) {// al soltar una tecla se vuelve falso
+				switch ( event.keyCode ) { //traduce las teclas a keyCode
+					case 38: 
+						upArrow = false;
+						break;
+					case 40: 
+						downArrow = false;
+						break;
+					case 37: 
+						leftArrow = false;
+						break;
+					case 39: 
+						rightArrow = false;
+						break
+					case 90: 
+						leftx = false;
+						break;
+					case 88: 
+						rightz = false;
+						break
+				}
+			};	  	
+			
+			document.addEventListener( 'keydown', onKeyDown, false );
+			document.addEventListener( 'keyup', onKeyUp, false );
+			
+			//ELEMENTOS DE ESCENA
+							  
+			var size = 10;
+			var arrowSize = 1;
+			var divisions = size;
+			var origin = new THREE.Vector3( 0, 0, 0 );
+			var x = new THREE.Vector3( 1, 0, 0 );//Los vectores del origen
+			var y = new THREE.Vector3( 0, 1, 0 );
+		  	var z = new THREE.Vector3( 0, 0, 1 );
+		  	
+			var color1 = new THREE.Color( 0xFFFFFF );
+		  	var color2 = new THREE.Color( 0xFFD3FB );
+		  	var colorR = new THREE.Color( 0xAA0000 );//cambiar los colores
+		  	var colorG = new THREE.Color( 0x00AA00 );
+		  	var colorB = new THREE.Color( 0x0000AA );
+			var colorRd = new THREE.Color( 0x79006E );
+		  	var colorGd = new THREE.Color( 0xFF00E8 );
+		  	var colorBd = new THREE.Color( 0xFF76F3 );
+		  
+		  	
+		  	var axesHelper = new THREE.AxesHelper( size );
+		  	var gridHelperXY = new THREE.GridHelper( size, divisions);
+		  	var gridHelperXZ = new THREE.GridHelper( size, divisions, color2, color2 );
+		  	var gridHelperYZ = new THREE.GridHelper( size, divisions, color2, color2 );
+            
+            
+            gridHelperXY.rotateOnWorldAxis ( x, THREE.Math.degToRad(90) );
+            gridHelperXZ.rotateOnWorldAxis ( y, THREE.Math.degToRad(90) );//rotar el plano
+            gridHelperYZ.rotateOnWorldAxis ( z, THREE.Math.degToRad(90) );
+            
+            
+            var arrowX = new THREE.ArrowHelper( x, origin, arrowSize, colorR );
+            var arrowY = new THREE.ArrowHelper( y, origin, arrowSize, colorG );
+            var arrowZ = new THREE.ArrowHelper( z, origin, arrowSize, colorB );
+			
+			//CREAR LAS GEOMETRÍAS
+			geometry = new THREE.BoxGeometry( 1.5, 1.5, 1.5 );//tamaño del cubo
+
+			
+			for ( var i = 0; i < geometry.faces.length; i ++ ) {
+				switch(i){
+					case 0: case 1: geometry.faces[ i ].color = colorRd; break;
+					case 2: case 3: geometry.faces[ i ].color = colorRd; break;
+					case 4: case 5: geometry.faces[ i ].color = colorGd; break;
+					case 6: case 7: geometry.faces[ i ].color = colorGd; break;
+					case 8: case 9: geometry.faces[ i ].color = colorBd; break;
+					case 10: case 11: geometry.faces[ i ].color = colorBd; break;
+				}				
+			}
+
+			 
+			
+			
+			var material = new THREE.MeshBasicMaterial( { color: color1, vertexColors: THREE.FaceColors } );
+			
+			
+			object = new THREE.Mesh( geometry, material );
+									
+		  	
+            scene.add( gridHelperXZ );
+		  	scene.add( arrowX );	
+		  	scene.add( arrowY );	
+		  	scene.add( arrowZ );	
+			scene.add( object );
+			
+			
+			camera.position.x = 5;
+			camera.position.y = 10;	 
+		  	camera.position.z = 10;			
+		
+			}
+    
+    function animate() {
+        render();
+        requestAnimationFrame( animate );
+    }
+    
+    function render(){
+        var dtime = Date.now()-startTime;
+		var tx=0, ty=0, tz=0;	//origen
+		var sc = 1;				
+		var theta=0;			
+		
+		//al oprimir una de las teclas se activa una variable y se cambia la posición
+		if(upArrow) {
+			tx=0; ty=0.1; tz=0;
+		}
+		if(downArrow) {
+			tx=0; ty=-0.1; tz=0;
+		}
+		
+		if(leftArrow) {
+			tx=-0.1; ty=0; tz=0;
+		}
+		if(rightArrow) {
+			tx=0.1; ty=0; tz=0;
+		}
+
+		if(leftx) {
+			tx=0; ty=0; tz=-0.1;
+		}
+		if(rightz) {
+			tx=0; ty=0; tz=0.1;
+		}
+		
+		
+		
+		
+		var t = new THREE.Matrix4();//matriz de traslacion
+		t.set( 	1, 0, 0, tx,
+				0, 1, 0, ty, 
+				0, 0, 1, tz,
+				0, 0, 0, 1	);
+
+		object.applyMatrix(t);
+		object.elementsNeedUpdate = true;
+		
+        camera.lookAt( 0, 0, 0 );//camara mirando al origen
+        renderer.render( scene, camera );
+    }
+    </script>
+  </body>
+</html>
